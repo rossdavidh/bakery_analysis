@@ -1,0 +1,7 @@
+*.swp
+*.xlsx
+*.csv
+*.txt
+*.ods
+old/
+*.png
