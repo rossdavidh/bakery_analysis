@@ -3,7 +3,8 @@ library(Hmisc)
 library(lubridate)
 library(gdata)
 
-file_location                                    <- "data_food.csv"
+file_location                                    <- "scaled_data_food.csv"
+#file_location                                    <- "data_food.csv"
 
 val_num_col <- function(df,c_name) {
     df[[c_name]]                                 <- as.numeric(df[[c_name]])

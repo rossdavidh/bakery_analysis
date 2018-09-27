@@ -3,7 +3,7 @@ library(Hmisc)
 library(lubridate)
 library(gdata)
 
-y_limits                <- c(0,500)
+y_limits                <- c(0,.5)
 #'define colors'
 tsc                     <- "#e6194B"
 bvc                     <- "#3cb44b"
@@ -24,7 +24,7 @@ barplot_all_cats        <- function(c_data) {
     df_12on             <- c_data[which(c_data$salesdate >= as.Date("2012-01-01", format = "%Y-%m-%d")),]
     df_12to17           <- df_12on[which(c_data$salesdate < as.Date("2018-01-01", format = "%Y-%m-%d")),]
     tbl                 <- t(as.table(as.matrix(aggregate(cbind(beverage_all,breads_togo,cakes_togo,cookie_all,deli,donut_all,freezer_togo,nonfood,pastry_all) ~ year,data=df_12to17,sum))))
-    myplot              <- barplot(tbl[2:10,],col=rainbow(9),names.arg=c(tbl[1,]),legend=c("bev","bread","cake","cookie","deli","donut","freezer","6p","pastry"))
+    myplot              <- barplot(tbl[2:10,],col=rainbow(9),names.arg=c(tbl[1,]),legend=c("bev","bread","cake","cookie","deli","donut","freezer","nonfood","pastry"))
     print(myplot)
     garbage <- dev.off()
 }

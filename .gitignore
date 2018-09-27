@@ -5,3 +5,7 @@
 *.ods
 old/
 *.png
+*.py
+models/
+data/
+*.rds
