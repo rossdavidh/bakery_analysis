@@ -4,13 +4,11 @@ library(lubridate)
 library(gdata)
 library(car)
 
-'load dataframe'
-full_df = readRDS(file = "./post_clean.rds")
-
-#split into pre- and post- cutoff date datasets
 cutoff_date             <- '2017-09-01'
 logfile_path            <- './logfile_2.txt'
 write('MODELS\n',logfile_path)
+
+full_df                 <- readRDS(file = "./post_clean.rds")
 df_post                 <- full_df[which(full_df$salesdate >= as.Date(cutoff_date, format = "%Y-%m-%d")),]
 'number rows in post cutoff dataframe'
 nrow(df_post)
@@ -18,20 +16,32 @@ df_pre                  <- full_df[which(full_df$salesdate < as.Date(cutoff_date
 'number rows in pre cutoff dataframe'
 nrow(df_pre)
 
-create_model            <- function(df_pre,df_post,target_col_name,noisy,logfilepath,lambda) {
-    target              <- df_pre[[target_col_name]]
-    model = lm(target ~ weekday+week+month+lastdayofmonth+day_tot+holiday+misc+(week*weekday*month),data=df_pre,weights=day_tot, y=TRUE, qr=TRUE)
-
+make_boxcox_plot        <- function(target_col_name,target,model,lambda,df_post,logfilepath) {
     #create boxcox plot to see what transform should be
     png(paste('./plots/',target_col_name,'_box_cox.png',sep=""), width = 1000, height = 600)
     myplot              <- boxCox(model,plotit=TRUE,family="yjPower")
     print(myplot)
     garbage             <- dev.off()
 
+    #create new model based on boxCox plot
     new_resp            <- yjPower(target, lambda)
     newmodel = lm(new_resp ~ weekday+week+month+lastdayofmonth+day_tot+holiday+misc+(week*weekday*month),data=df_pre,weights=day_tot, y=TRUE, qr=TRUE)
     newm_rpt            <- paste('new resp model',target_col_name,summary(newmodel)$r.squared,summary(newmodel)$adj.r.squared)
     write(newm_rpt,file = logfilepath,append=TRUE)
+
+    #how well do we predict with this model
+    suppressWarnings(df_post$pred_val            <- predict(newmodel, df_post))
+    pred_r_sq_header    <- paste('newmodel R-sq of predictions to actual for data after ',cutoff_date)
+    write(pred_r_sq_header,file=logfilepath,append=TRUE)
+    pred_r_sq           <- cor(df_post[[target_col_name]],df_post$pred_val   )^2
+    write(pred_r_sq,file=logfilepath,append=TRUE)
+    write('\n')
+    return
+}
+
+create_model            <- function(df_pre,df_post,target_col_name,noisy,logfilepath,lambda) {
+    target              <- df_pre[[target_col_name]]
+    model = lm(target ~ weekday+week+month+lastdayofmonth+day_tot+holiday+misc+(week*weekday*month),data=df_pre,weights=day_tot, y=TRUE, qr=TRUE)
 
     #print out some logging about how things went
     r_sq_rpt            <- paste('Model for ',target_col_name,'\nR-squared',summary(model)$r.squared,'\nAdjusted R-squared',summary(model)$adj.r.squared)
@@ -46,13 +56,9 @@ create_model            <- function(df_pre,df_post,target_col_name,noisy,logfile
     write(pred_r_sq,file=logfilepath,append=TRUE)
     print(paste(target_col_name,summary(model)$r.squared,summary(model)$adj.r.squared,pred_r_sq))
 
-    #what about with the newmodel
-    suppressWarnings(df_post$pred_val            <- predict(newmodel, df_post))
-    pred_r_sq_header    <- paste('newmodel R-sq of predictions to actual for data after ',cutoff_date)
-    write(pred_r_sq_header,file=logfilepath,append=TRUE)
-    pred_r_sq           <- cor(df_post[[target_col_name]],df_post$pred_val   )^2
-    write(pred_r_sq,file=logfilepath,append=TRUE)
-    write('\n')
+    sink("/dev/null")
+    make_boxcox_plot(target_col_name,target,model,lambda,df_post,logfilepath)
+    sink()
 
     #only do this part if we feel like being chatty
     if (noisy) {
