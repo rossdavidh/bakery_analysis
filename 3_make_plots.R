@@ -17,6 +17,7 @@ nfc                     <- "#000000"
 psc                     <- "#000075"
 #'load dataframe'
 c_data = readRDS(file = "./post_clean.rds")
+
 barplot_all_cats        <- function(c_data) {
     image_pathname      <- './plots/barplot_of_mix.png'
     png(image_pathname, width = 1000, height = 600)
@@ -41,6 +42,26 @@ dn_model                <- readRDS(file = "./models/lmdonut_all.rds")
 fr_model                <- readRDS(file = "./models/lmfreezer_togo.rds")
 nf_model                <- readRDS(file = "./models/lmnonfood.rds")
 ps_model                <- readRDS(file = "./models/lmpastry_all.rds")
+
+plot_all_cats_vs_day_tot                         <- function(df) {
+    image_pathname      <- './plots/all_cats_sales_v_day_tot.png'
+    png(image_pathname, width = 1500, height = 600)
+    myplot              <- ggplot(data = df) +
+      labs(x = 'days since store opened',y = 'sales by category') +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = beverage_all,colour = "bev")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = breads_togo,colour = "bread")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = cakes_togo,colour = "cakes")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = cookie_all,colour = "cookie")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = deli,colour = "deli")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = donut_all,colour = "donut")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = freezer_togo,colour = "freezer")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = nonfood,colour = "nonfood")) +
+      geom_smooth(method='loess',mapping = aes(x = day_tot,y = pastry_all,colour = "pastry")) +
+      scale_colour_manual(name="legend", values=c(bvc,brc,cac,ckc,dlc,dnc,frc,nfc,psc))
+    print(myplot)
+    garbage <- dev.off()
+}
+plot_all_cats_vs_day_tot(c_data)
 
 plot_all_cats_dotm_vs_month                      <- function(cutoff_date) {
     image_pathname      <- paste('./plots/all_cats_sales_dotm_v_month_since_',cutoff_date,'.png',sep="")

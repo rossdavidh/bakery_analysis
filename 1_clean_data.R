@@ -122,7 +122,9 @@ set_contrasts           <- function(df) {
 
 #MAIN SCRIPT BEGINS HERE
 
-c_data                                           <- read_csv(file_location, na = "")
+c_data                  <- read_csv(file_location, na = "")
+c_data$salesdate        <- as.Date(c_data$salesdate, format = "%m/%d/%y")
+c_data                  <- dplyr::arrange(c_data, salesdate)
 #numeric columns
 for (num_col_name in c('beerdrinks','nonfood','deli','beverage_all','donut_here','cookie_here','pastry_here','freezer_togo','cakes_togo','breads_togo','donuts_togo','cookies_togo','pastries_togo')) {
     c_data[[num_col_name]]                       <- val_num_col(c_data,num_col_name)
@@ -131,7 +133,6 @@ for (num_col_name in c('beerdrinks','nonfood','deli','beverage_all','donut_here'
 c_data                  <- create_combo_columns(c_data)
 #'categorical and date columns'
 c_data                  <- process_notes(c_data)
-c_data$salesdate        <- as.Date(c_data$salesdate, format = "%m/%d/%y")
 c_data                  <- process_date(c_data)
 c_data                  <- holidays(c_data)
 #sanity check of what we did
