@@ -25,7 +25,9 @@ make_boxcox_plot        <- function(target_col_name,target,model,lambda,df_post,
 
     #create new model based on boxCox plot
     new_resp            <- yjPower(target, lambda)
-    newmodel = lm(new_resp ~ weekday+week+month+lastdayofmonth+day_tot+holiday+misc+(week*weekday*month),data=df_pre,weights=day_tot, y=TRUE, qr=TRUE)
+    #TODO: figure out why weights=day_tot is not doing anything
+    #newmodel = lm(new_resp ~ weekday+week+month+lastdayofmonth+day_tot+holiday+misc+(week*weekday*month),data=df_pre,weights=day_tot)
+    newmodel = lm(new_resp ~ weekday+week+month+lastdayofmonth+day_tot+holiday+misc+(week*weekday*month),data=df_pre)
     newm_rpt            <- paste('new resp model',target_col_name,summary(newmodel)$r.squared,summary(newmodel)$adj.r.squared)
     write(newm_rpt,file = logfilepath,append=TRUE)
 
